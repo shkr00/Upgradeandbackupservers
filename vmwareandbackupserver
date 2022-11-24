@@ -1,0 +1,967 @@
+VMware vSphere 
+https://www.ubackup.com/enterprise-backup/esxi-upgrade-6.7-to-7.0.html
+
+Preparations before upgrade VMware vSphere/ESXi 6.7 to 7
+👉Before you start upgrading vSphere from 6.7 to 7.0, you may need to prepare the following in advance:
+✤Check compatibility: such as compatibility with VMware ESXi, vCenter Server, VMware accessories and plug-ins.
+
+✤Shut down all virtual machines: make sure there is no running VM on the ESXi host when you start the ESXi upgrade 6.7 to 7.0 process. To further protect the VM data, you can also backup[link] before start.
+
+✤Check storage space for upgrade: Upgrades may fail if you don’t have enough free space.
+
+✤The upgrade sequence: If your environment is distributed across multiple machines, the upgrades must be done sequentially, not concurrently. For example, first vCenter Server, then VMware ESXi.
+
+✤Backup ESXi 6.7 VMs: Before you start doing some risky operations, it is necessary to back up your VMs in case of accidental loss. Thus, even if anything goes wrong, you can roll back to the previous version via the backup.
+
+
+simple steps to backup multiple VMware ESXi VMs:
+AOMEI CYBER BACKUP
+ 
+
+Adding Vmware vsphre server 
+ 
+So, here added the server
+ 
+
+Create new task to create the backup
+ 
+
+Need to select the target and backup machine
+ 
+Select the backup machine 
+ 
+
+Select the backup location 
+ 
+Backup schedule 
+ 
+
+Backup Status
+ 
+
+
+Method 1. Upgrade ESXi 6.7 to 7.0 via offline ZIP file and ESXCLI
+
+If you want to upgrade ESXi 6.7 to 7.0 without vCenter, then this may be the method you need. Just download the offline bundle you need from VMware website, and using ESXi web client to upload the ZIP file, then upgrade ESXi 6.7 to 7.0 via CLI. Here's the step-by-step guide to do it.
+✎Note: To use command line interface on the ESXi host, you need to enable ESXi Shell and SSH in advance.
+Approach 1: Enter ESXi direct console -> “System customization” -> “Troubleshooting options” -> click on “Enable ESXi Shell” and “Enable SSH”.
+Approach 2: Log in to VMware Host Client web interface with your ESXi root credentials -> “Manage” -> “Services” -> start the “TSM” and “TSM-SSH” services.
+Enable SSH/SHELL EXSI Server.
+Login to exsi Machine.
+Go to Actions -> Services->Enable SSH (Secure Shell) and Services->Enable console Shell)
+
+
+ 
+Once login go the Troubleshooting mode options.
+INSIDE Troubleshooting menu.
+There will be an option.
+Enable SSH 
+Enable EXSi Shell
+ 
+ Method to enable SSH Exsi server.
+
+
+ 
+
+How to upgrade VMware ESXi from 6.7 to 7.0 via offline method:
+1. Download the full-down ESXi 7.0 offline bundle from the VMware’s official site. Here you can download other ESXi versions as well. For example, you can also perform the ESXi upgrade 6.7 to 7.0 U3 via corresponding bundle.
+2. Access VMware ESXi web client, right-click Manage from the left inventory and select Enter maintenance mode.
+ 
+3. Navigate to Storage > Datastore > Datastore browser to upload the downloaded ZIP file to the ESXi datastore.
+ 
+4. Run the following command to upgrade VMware ESXi 6.7 to 7.0:
+esxcli software profile update -p ESXi profile name -d /vmfs/volumes/datastore/foldername/Full Name of the ZIP file.zip
+Note:
+ESXi profile name: contains the version and build number that is equal to the ESXi version and build number defined in the name of the ZIP file used for the ESXi upgrade.
+You can run the command “vmware-v” to check the current version of ESXi running on your server.
+Here's an example:
+esxcli software profile update -p ESXi-7.0U2d-18538813-standard -d /vmfs/volumes/datastore1/ESXi7-bundle/VMware-ESXi-7.0U2d-18538813-depot.zip
+ 
+ 
+5. Reboot the ESXi host to finish the ESXi upgrade 6.7 to 7.0.
+Method 2. Upgrade ESXi 6.7 to 7.0 via ISO (Lifecycle Manager)
+Here's another way to upgrade ESXi 6.7 to 7.0 with vCenter - you can use vSphere Lifecycle Manager to upgrade the ESXi hosts in an environment where you have VMware NSX-T Data Center enabled.
+✎The requirements for ESXi upgrade via Lifecycle Manager:
+✤The ESXi hosts to upgrade are version 6.5 or later
+✤vCenter Server version 6.7 or earlier
+✤VMware NSX-T Data Center 3.0
+✤The vmknics on the ESXi host are properly configured and the DHCP server works properly
+If these requirements are all met, you can refer to the following tutotrial to upgrade ESXi 6.7 to 7.0.
+How to upgrade ESXi 6.7 to 7.0 using ISO:
+1. Launch vSphere web client and log in to the vCenter Server, then navigate to Menu > Lifecycle Manager.
+ 
+2. Click Imported ISOs > IMPORT ISO to import the ISO image for ESXi 7.0.
+ 
+3. Click BROWSE to select the ESXi 7.0 ISO file, click IMPORT to start.
+ 
+4. Select the imported ISO image and click NEW BASELINE.
+ 
+5. Provide a Name and optionally a Description in the pop-up window, select Upgrade option as Content, and click Next to continue.
+ 
+6. Select the ISO image to be used and click Next to continue.
+ 
+7. Review the Summary and click Finish to create the new baseline.
+ 
+8. Select a ESXi host or a cluster, navigate to Updates > Baselines >Attached Baselines and click ATTACH to attach the baseline to the host or cluster.
+ 
+9. Select the ESXi 7.0 Upgrade Baseline we just created in the pop-up window, and click ATTACH.
+ 
+10. Click CHECK COMPLIANCE, it will show “Non-Compliant” for all hosts in the cluster. Then you can upgrade the ESXi host.
+ 
+11. To remediate an individual ESXi host, Place the ESXi host into maintenance mode. Select the ESXi 7.0 Upgrade baseline and Click Remediate.
+Note: You can also remediate the entire cluster.
+ 
+12. Select the ESXi host in the pop-up wizard and click REMEDIATE to start VMware ESXi upgrade 6.7 to 7.0.
+ 
+Once the upgrade is completed, the status of the attached Upgrade Baseline will become “Compliant”.
+Do I need to license ESXi host after upgrade?
+Note that only if you upgrade an ESXi host to a version that starts with the same number, you don't need to replace the existing license with a new one. For example, if you upgrade a host from ESXi 6.5 to 6.7, you can use the same license. But if you upgrade ESXi 6.7 to 7.0, you must apply a vSphere 7 license.
+When you upgrade ESXi 6.7 or 6.5 to 7.0 hosts, the hosts are in a 60-day evaluation mode period until you apply the correct vSphere 7 licenses. You can acquire vSphere 7 licenses from My VMware. After you have vSphere 7 licenses, assign them to all upgraded ESXi 7.0 hosts by using the license management functionality in the vSphere Client.
+For more details about it, please refer to: After You Upgrade ESXi Hosts
+ 
+Summary
+Although VMware vSphere 6.7 End of Life (EOL) date has been extended, you may still need to upgrade your host as soon as possible. This article introduces 2 ways to perform VMware ESXi upgrade 6.7 to 7.0 with or without vCenter Server. Before you start, you could back up VMware ESXi VMs to further protect your VM data.
+
+
+Linux df command
+The df command stands for "disk-free," and shows available and used disk space on the Linux system.
+df -h shows disk space in human-readable format
+df -a shows the file system's complete disk usage even if the Available field is 0
+
+df -T shows the disk usage along with each block's filesystem type (e.g., xfs, ext2, ext3, btrfs, etc.)
+df -i shows used and free inodes
+
+Linux du command
+
+
+du shows the disk usage of files, folders, etc. in the default kilobyte size
+du -h shows disk usage in human-readable format for all directories and subdirectories
+du -a shows disk usage for all files
+du -s provides total disk space used by a particular file or directory
+
+
+Linux ls -al command
+ls -al lists the entire contents, along with their size, of a particular directory
+Linux stat command
+stat <file/directory> displays the size and other stats of a file/directory or a filesystem.
+Stat /etc/hosts
+Stat file.txt
+Linux fdisk -l command
+fdisk -l shows disk size along with disk partitioning information
+ 
+
+VMWARE EXSI 
+Machine creating and live backup and restore backup.
+ 
+ 
+
+ 
+Here can add more HDD and multiple network adaptor
+ 
+
+Need to upload iso file to datastore 
+
+Installation in EXSI
+ 
+ 
+ 
+ 
+
+ 
+
+ 
+ 
+ 
+
+ 
+
+ 
+
+
+ADD VM EXSI Environment to daily backup 
+ 
+VMWARE Vsphre Backup restore (there is multiple software for live backup and restoration vm like Nakivo, AEMOI, VEEAM)
+Here I am using Nakivo for backup and restoration backup.
+Drawback from same software we can restore backup.
+Live Esxi server
+ 
+
+So, I already taken the live backup 
+ 
+
+Recovery option
+ 
+So now performing recovery jobs
+ 
+Backups
+ 
+Now restoring backup   
+ 
+Destination
+ 
+Run Restoration process
+ 
+
+ 
+
+After recovered virtual machine
+ 
+
+ 
+
+
+
+
+
+
+
+
+Types of Server Hardware
+Tower Servers
+ 
+Tower servers are singular computers with the dedicated purpose of a server – they are housed in a standalone upright cabinet, or “tower”, much like the tower of a personal desktop computer.
+Towers provide their own unique advantages. Because of the low interior component density, they are easier to cool than rack or blade servers. The encased design allows room for more hardware or drive installation if necessary.
+While blade servers and rack servers feature neat, modular rack designs, tower servers are much less space efficient. A set of tower servers will be much heavier and space-consuming than their thinner counterparts. Cable management can be complicated and bulky, and the air cooling from tower fans can be noisy.
+
+Tower server
+ 
+Tower servers are very similar to desktop PCs, but can support more hardware and drives. Depending on your business need tower can grow as required from a single server to several hundred or even can be easily scaled up or down. This make them a good choice for small businesses. Tower servers be configured to support various network resources such as file storage / GIT hosting / other functions. They also support Active Directory / DHCP services.
+Tower servers can grow with the business so they’re scalable and redundant. Their capacity & redundancy make them a good choice for businesses that need to support a large number of users. A tower server is complicated & takes up a lot of space but it also offers a wide range of applications . This makes it a good choice for small businesses & their IT departments which want to scale quickly. However, please consider the fact that these tower server may be an expensive option & may also require you to have a dedicated team in order to manage them properly for your business.
+Choosing a tower server isn’t a decision to be made lightly. The right server will ensure a high level of security and performance for your business, making it an important investment. Tower servers offer many benefits such as minimising the risk of data breaches & third-party access. They’re also an excellent choice for law firms, medical practises and other businesses. Aside from security, tower servers are also easy to configure and manage.
+•	A tower server resides within an upright cabinet that resembles a tower-style PC
+•	These servers provide the benefit of easier cooling because they offer a relatively low component density
+•	Tower servers, however, take up more space than other server types
+
+Rack server
+If you are looking for a server then rack servers are an excellent choice for your computing needs. These servers offer scalability / expandability / structural framework. The advantages of rack servers are that they are lightweight – easy to install and are flexible enough to fit into any environment. The benefits of rack server s are many and they are a good choice for mission-critical programmes. Below are some of the advantages of rack servers.
+Rack servers are also a good way to consolidate server units . It provide the option of installing a network switch. It also allows your network managers to connect all servers through a single switch. Rack servers are also scalable & making it easy to add & upgrade hardware as per need. It can accommodate multiple hard drives & processors that needs to be stacked to maximise storage capacity. This makes rack servers a very flexible option for your business computing necessities.
+ 
+The main components of a rack server include the central processing unit ( CPU). CPU is the heart of the server & gives instructions to the other servers in the rack. RAM stands for Random Access Memory and is the active data processing capacity of the server stack. Rack servers have the most slots for server memory, allow for future expansion. Racks are small and take up little space, making them ideal for utility closets. A rack also works well for routine maintenance.
+•	Rack server are usually stacked right on top of one another
+•	It is a big plus point when it comes to scalability
+•	Also the stacked model helps in consolidating network resources and minimizing the floor space requirements
+
+Blade servers
+Blade Servers
+ 
+Blade servers are chassis-based servers similar to rack servers, but the more stripped-down design allows for even more space efficiency than rack servers, among other key advantages.
+These server systems are comprised of individual server “blades”, thin dedicated server boards that each have individual processing power, memory capacity and a simple modular design that allows for easy configurability.
+Blade servers offer more processing power and ease of cable management than rack servers, but these advantages come with a larger price tag. If money isn’t a concern so much as efficiency and performance is, then blade servers are a very good option.
+
+A blade server is a scaled-down version of a traditional server computer. Their modular design maximises energy efficiency while saving space and physical resources. Blade servers are ideal for small and medium-sized businesses looking to reduce their total cost of ownership. They offer the performance and storage capabilities of a traditional server at a fraction of the cost. However this is not at the expense of speed / performance. For this reason, they aren’t ideal for every business.
+ 
+Blade servers were invented in the 2000s by Christopher Hipp and David Kirkeby, two former Compaq employees. Hipp – a former graphic designer where as Kirkeby – a computer engineer they both worked together to develop the first blade server. The two eventually patented their idea and began selling the product in 2001. Eventually, Hewlett-Packard and HP bought the design. Blade servers are now the most popular type of server for businesses.
+In addition to hard drives – blade servers can also include network interface controllers. Some blades do also have host adapters for Fibre Channel storage systems. Some have a network interface built into the motherboard. However additional network interfaces can be installed by installing mezzanine cards. This way users can use as many network interfaces as they need without worrying about overloading the system. Please note that the number of ports & features can vary. Blade servers are recommended for small or medium enterprises & can be cost effective alternative for larger IT departments.
+•	Blade servers are compact devices that house multiple thin, modular circuit boards
+•	Invest into blade servers to maximize your network storage and computing capabilities
+Mainframes
+If you are thinking about upgrading your server hardware; then consider the benefits of mainframe servers. Not only they are designed for transaction processing but also many mainframes have two layers of virtualisation – including logical partitions & virtual machines . The IBM zSeries – for example it offer two levels of virtualisation. In some cases; customers run two machines / one fully active & the other in a backup data centre. It allows them to maximise system performance without having any additional costs.
+ 
+In the business world these mainframes are often used for complex / data-intensive workloads. These include real-time, interactive banking and OLTP. But after hours, banks run batch jobs that can include customer statements, daily totals, interest calculations, reminders and marketing emails. These tasks require large amounts of CPU and storage which mainframes excel at. In addition to business applications, mainframes can also handle terabytes of data. This makes them ideal for enterprise resource planning and online entertainment delivery.
+Although mainframes are a highly specialised form of computer hardware, they’ve numerous advantages. For example, they can run financial models on a much smaller scale than traditional computers. This means they are cheaper to deploy. In addition to this they allow for faster processing. As demand for mainframes declined, they were eventually replaced by personal computers. As a result, their market share declined. Mainframe installations were usually reserved for government and financial services mainly.
+•	Mainframes offer the ability to support large volumes of simultaneous transactions and heavy I/O loads
+•	Financial services firms conducting concurrent, real-time transactions are among the typical mainframe customers
+•	The primary drawbacks to mainframes are their size.
+
+
+
+
+What Is a Server Cluster?
+A server cluster is a unified group of servers distributed and managed under a single IP address. This setup ensures higher availability, proper load balancing, and system scalability.
+Each server is a node with its own storage (hard drive), memory (RAM), and processing (CPU) resources. For instance, a two-node cluster configuration means that if one physical server crashes, the second will immediately take over. This process, known as failover clustering, helps you avoid downtime. 
+Ideally, you use multiple web and app nodes to guarantee hardware redundancy. This kind of architecture is known as a high-availability cluster. It helps prevent downtime if a component fails.
+This is especially true if the operating system fails, which does not have redundancy in a single server. Since there will be no site failures, your users will not even know that the server crashed.
+There are two usual types of server clusters – manual and automatic. Manual clusters are not an ideal solution since the manual configuration of a node to the same data IP and address comes with downtime. Even a 2 to 5-minute downtime could be expensive or possibly critical. On the other hand, automatic clusters let you configure software ahead of time. This type of cluster setup automatically carries out the server switch.
+Subscribe to the Liquid Web newsletter for tips on infrastructure optimization.
+Why Are Server Clusters Deployed?
+Businesses often deploy a server cluster system to avoid downtime and maintain system accessibility, even when critical hardware fails. Cluster architecture is also ideal for businesses suffering from performance degradation. It lets them split off the database server to enable fast and uninterrupted performance for high-volume workloads.
+What Are the Types of Server Clusters?
+There are four types of server clusters. The type you choose depends on your business objectives and infrastructure needs.
+1. High Availability (HA) Server Clusters
+High availability (HA) clusters are an optimal choice for high-traffic websites. For example, you may use HA clusters for online shops or applications that need critical systems to remain operational for optimal, continuous performance. 
+High availability clusters let you avoid single points of failure since they are built on redundant hardware and software. They are critical for load balancing, system backups, and failover. They are composed of multiple hosts that can take over if a server shuts down. This guarantees minimal downtime if a server overloads or fails.
+HA clusters have two architecture types: Active-Active and Active-Passive.  
+An active-active cluster means all nodes work simultaneously to balance loads. In contrast, an active-passive architecture means a primary node handles all workloads. Meanwhile, a secondary node remains on standby for downtime. 
+The secondary server is also known as a hot spare or a hot standby since it contains the database from the primary node. As the hot standby is ready to take over if a component crashes, this is a lower-cost implementation than active-active.
+High-availability clusters give you more reliability while also letting you scale easily. Not to mention, they offer more efficient maintenance and robust infrastructure security. With these clusters, you can save costs, minimize downtime, and create a better user experience.
+2. Load Balancing Clusters
+Load Balancing cluster refers to a server farm that distributes user requests to multiple active nodes. The main benefits include accelerating operations, ensuring redundancy, and improving workload distribution.  
+Load balancing lets you separate functions and divide workloads between servers. This configuration helps maximize the utilization of resources. It uses load-balancing software to direct requests to different servers based on an algorithm. The software also handles outgoing responses.
+Load balancers are used in the active-active configuration of a high-availability cluster. The HA cluster uses the load balancer to respond to different requests and distribute them to independent servers. The distribution can be symmetrical or asymmetrical depending on the configuration data and computer performance.
+In an active-passive high-availability cluster, the load balancer monitors nodes’ availability. If a node shuts down, it doesn’t send any more traffic to it until it is fully operational.
+Load balancing architecture also lets you use multiple links at the same time. This feature is especially useful in infrastructure that requires redundant communication. For example, this architecture is often deployed by telecommunications companies and data centers. The main benefits include cost reduction, high-bandwidth data transfer optimization, and better scalability.
+3. High-Performance and Clustered Storage
+High-performance clusters, also known as supercomputers, offer higher performance, capacity, and reliability. They are most often used by businesses with resource-intensive workloads.
+A high-performance cluster is made up of many computers connected to the same network. And you can connect multiple such clusters to the data storage centers to process data quickly. In other words, you benefit from both high-performance clusters and data storage clusters and get seamless performance and high-speed data transfers.
+These clusters are widely used with Internet of Things (IoT) and artificial intelligence (AI) technology. They process large amounts of data in real time to power projects such as live streaming, storm prediction, and patient diagnosis. For this reason, high-performance cluster applications are often used in research, media, and finance.
+4. Clustered Storage
+Clustered storage consists of at least two storage servers. They let you increase your system’s performance, node space input/output (I/O), and reliability. 
+Depending on business requirements and storage demands, you can opt for a tightly or loosely coupled architecture.
+A tightly coupled architecture is directed at primary storage. It separates data into small blocks between nodes. 
+In contrast, a self-contained, loosely coupled architecture offers more flexibility. But it doesn’t store data across nodes. In a loosely coupled architecture, performance and capacity are limited to the capabilities of the node storing the data. Unlike tightly coupled architecture, you can’t scale with new nodes.
+ 
+Benefits of Server Clustering
+A clustered environment helps you manage hardware, application, and website failures. In other words, this environment ensures uptime and availability. By saving engineering efforts, it can drastically reduce costs associated with system recovery.
+Put simply, investing in server clusters lets you save money in the long run.
+Flexibility and Scalability
+An individual server handles everything from the network connection to storage for a business. By deploying a multi-server architecture with clustering capabilities, you can significantly improve the flexibility and scalability of that server. 
+In other words, clustering lets you scale one server to handle the increasing resource demand. Not to mention, it's simpler for businesses to deploy an additional node to an existing cluster. If you have a managed dedicated server, you can do so with a simple phone call. 
+Improved Availability and Performance
+Another motivation driving investment in cluster solutions is performance. Besides providing hardware redundancy and ensuring uptime, a clustered environment can improve performance. 
+In particular, a cluster with a dedicated database server can improve website or application speed. This setup lets you improve performance while increasing support for simultaneous connections.
+If you comply with regulations such as PCI-DSS, server clusters become a practical necessity. This is especially relevant if you store financial information on a server that doesn't connect to the Internet.
+Reduced IT Costs
+Companies need a network with built-in redundancy to ensure that customers can always connect to it. Besides that, the servers need to act as a single system. A clustered environment helps with that by preventing downtime and actually lowering costs by keeping the server fully operational. 
+In other words, clustering lets you provide continuous uptime. As clustered servers are configured to work together on a single network, they reduce risk vulnerability while boosting network performance.
+Customizable Infrastructure
+Clustered server architecture can benefit businesses of all sizes. Specifically, it helps optimize processes, from networking services to the end-user experience. All these workloads are assigned to applications, and they get rolled out on separate servers that sync in real time.
+Specifically, a business can customize the number of servers in a clustered environment. This customization allows for cost management while eliminating single points of failure. Using custom-built infrastructure ensures your environment is specifically engineered for your workload. 
+A reputable service provider can help determine the most cost-effective architecture for you.
+The True Cost of Downtime
+According to Uptime Institute’s 2022 Outage Analysis Report, 80% of organizations report their data centers have experienced some outage over the past three years. For 60% of those outages, total financial losses were $100,000 or more. An unlucky 15% of respondents reported outage costs upwards of $1 million.
+Besides financial losses, businesses reported facing reputational damage and compliance breaches.
+Notably, in October 2021, Facebook’s network was unavailable for six hours. This network failure resulted in an estimated revenue loss of $99.75 million before users could get back online. That’s a loss of over $16 million per hour.
+Now, most businesses won’t lose as much revenue as Facebook. But hourly downtime costs continue to rise and should be taken seriously.
+The 2021 Cost of Data Breach Study by IBM and the Ponemon Institute reports that 91% of companies experience $300,000 or more in financial loss for every hour of downtime. When converted to minutes, that comes out to at least $4,998 per minute.
+If there is one lesson to be learned from these events, it’s that CTOs and CIOs should be concerned about downtime. Not only does it add costs, but it can also damage the company's reputation and negatively impact customer experience.
+If your business requires reliable IT services, consider server clusters. They are a critical investment for long-term growth and performance. A clustered environment will boost performance and ensure infrastructure availability, scalability, and reliability.
+
+
+Since the advent of new technologies globally, there has been a demand for improving data center optimization and efficiency. These advancements have led to the development of server clusters. A server cluster provides a user with several advantages over a regular data center server, such as improved scalability, high availability, increased reliability, and redundancy.
+Clustering servers into multiple nodes provides users with reliability, optimized load balancing, system scalability, and a higher availability level than just one server. Clustered servers are used for applications that include printing, databases, file sharing, and messaging servers.
+With clustered servers, your data is protected. These servers are programmed to function together in a cluster to maintain the consistency of cluster configuration over time.
+See also: Latest Server Cluster Configurations Are Ready To Deploy
+Before undertaking this systemic approach, it is important to understand server clustering capabilities. Server clustering works to protect against outages when used. Outages are caused by software failure, external events on the physical server site, and hardware failure. They are capable of dealing with issues like:
+•	Application/Service Failures: Clustering servers can deal with application/service failures resulting from critical errors involving software or services that are crucial to the operation of the server or data center. However, application/service failures are also caused by other factors, and they are unavoidable. 
+•	Hardware/System Failures: A server cluster also helps to deal with hardware failures that can affect the smooth running of your services. Hardware/system failures are caused by overheating, poor optimization, or the component reaching the end of its product lifespan. Hardware components affected in this process are CPUs, memory, power supplies, and hard drives. 
+•	Site Failures: Site failures are widespread. Server clusters help deal with site-related problems caused by events outside the data center environment, such as natural setbacks, power disruptions, etc.
+Types of Server Clusters
+Servers are classified based on their node or clustering system fused with the device responsible for storing configuration data. There are three different types of server clusters.
+1.	Single or Standard Quorum Cluster
+A single or standard quorum cluster is one of the most commonly used server clusters. It consists of multiple servers that employ one or more cluster disk arrays for a single connection device known as a bus.
+In essence, a server is responsible for managing and owning the individual cluster disk arrays within the cluster. The titular quorum is the system used in determining whether or not each cluster is online and uncompromised. Single or standard quorum clusters are efficient and straightforward to use. Each server has a vote to communicate to the central bus online.
+However, the cluster continues to run as long as over 50% of the servers or nodes in a single quorum cluster are online and functional. If more than 50% of the clusters are not responsive, the cluster stops functioning until the specific node issue is resolved.
+2.	Majority Node Set Cluster 
+The majority node set cluster is similar to single quorum clusters. However, the majority node set cluster is more flexible when configuring remote servers. It works for servers that are located in different geo-locations.
+Each node has its copy of the cluster’s configuration data which consistently flows across all nodes. However, the most node set clusters do not need a shared storage bus to function as each node has its storage system for duplicate quorum data locally.
+3.	Single Node Cluster
+A single node cluster contains a single node mainly used for testing. Since single-node clusters are used for testing purposes, they are best used as a tool for research and development of cluster applications. However, the use of a single-node cluster is limited by its lack of failover because it’s made with a single node which can cause the unavailability of cluster groups.
+How Does Server Clustering Work?
+A server cluster is a group of servers working together under a single IP address to provide users with higher availability, scalability, and reliability. Since server clusters are a group of servers connected to a single system, they work together to increase efficiency.
+For instance, whenever one of the servers experiences a service outage, server clusters allow another server to take up the operation, redistributing the workload to another server before the user experiences an outage or downtime. In essence, server clusters help users reduce downtime and improve the efficiency of operation rather than shutting down.
+In a clustered server environment, each server in a cluster is called a node. However, each node has its own RAM, hard drive, operating system, and CPU resources to command.
+They are responsible for managing and owning their components, which means that work can easily be transferred to another server when one server within the cluster fails. Users can easily access server-related resources since their work is uninterrupted.
+
+Upgrading Windows Server 2012 to 2016 Windows Server.
+
+Preparations for Windows Server 2016 upgrade
+✔ Make sure the applications are compatible. Since Windows Server 2016 only supports x64 bit operating system, you need to check if the installed programs is x64 bit. If not, it may work improperly after the upgrade.
+✔ Ensure all Windows updates are complete and no virtual machines running. If there are any upcoming updates in previous version, such as, Server 2012, the upgrade process may fail.
+✔ Verify if your disk has enough space. The minimal space for core installation is 32GB, but you may need more space. Because you may need to install new applications, save files and folders on the system drive in the future. 
+To allocate free space, you can use computer management in server or third-party partition manager like AOMEI or other software Partition Assistant Server. Here take later as an example:
+•	Select the partition that has much free space and click Allocate Free Space. 
+
+Necessary to backup server 2012 R2 before upgrading 
+
+Unlike upgrading to Windows 10 or other systems, Microsoft does not support rolling back windows server 2016 to 2012 if you perform a in-plance upgrade. So it's recommended to back up your server with a reliable and easy-to-use software AOMEI Backupper Server.
+Step 1. On the main page, click on the “Backup” tab, and then select “System Backup”.
+ 
+Step 3. In the next screen, the items needed for a system restore is automatically included, and all you need to do is click the folder shaped button to select the target location. It's suggested to backup Windows Server 2012 to new hard drive, USB drive, network drive, NAS or cloud drives.
+ 
+Step 4. Confirm the backup information and click “Start Backup” to create system image for Windows Server 2012. 
+ 
+Except for 2012, this software still supports Windows Server 2003, 2008, 2016, 2019, and 2022 as well as its R2 version, so even if you want to upgrade Windows Server 2012 to 2019, you can use it as a precaution measure, not alone upgrade Windows Server 2012 to 2016. 
+And on AOMEI Backupper TechPlus edition, you can use it to backup system on unlimited PCs and servers within a company. To make it more convenient, you can choose to create a portable version of AOMEI Backupper and run it off a flash drive without installing again. 
+ 
+In-depth guide: upgrade Windows Server 2012 (R2) to 2016 step by step 
+Now, you can safely upgrade your Server 2012 after you prepare for Windows Server 2016 upgrade. For detailed steps, please continue to see below. It also applies to upgrade Windows Server 2012 to 2019.
+Step 1. Log in to Windows Server 2012 R2 and download the media file from Microsoft, then double-click it to update and install 2016.
+Step 2. In the first Setup window, tick “Download and install updates”, and “I want to help make the installation of Windows better”, then click “Next”.
+ 
+Step 3. Input the product key of the current server and click “Next”. You can go the properties of the server, then scroll down to the product ID and remember it.
+Step 4. Select the image you want to install and click “Next.”
+Step 5. Read the license terms and click “Accept” to move on.
+Step 6. Tick “Keep personal files and apps” and click “Next”. If you don’t choose the right version, the first option will be unavailable.
+ 
+Note: If you upgrade Windows Server 2012 to 2019, you may receive the error "keep personal files and apps greyed out windows server 2012 r2 to 2019", that's because you select a Windows versions different from the one you are currently using.
+Step 7. Then, you may see some warning messages and click “Confirm” at the right side.
+ 
+Note: If there is a message, saying, “Active Directory on this domain controller does not contain Windows Server ADPREP /FORESTPREP updates.”, you need to open cmd and change drive letter of the media file with the following commands.
+• E: (This is the drive letter of media file.)
+• cd /support/adprep
+• adprep.exe /forestprep
+• c
+• adprep.exe /domainprep
+• c
+Step 8. Click “Refresh” and then “Install” to start the installation of Windows Server 2016. Wait until the process ends and set up your preferences.
+ 
+Wait until the process ends and set up your preferences. And then, you can use this operating system to do what you want, if you are not used to it, or the system crashes, you can restore Windows 2012 system image from Windows Server 2016. 
+Also, if there is any data loss, you can choose to restore files from backup, even if you don't create a file backup. In this case, you need to use the Explore Image feature to mount backup image and copy files from them. 
+ 
+
+
+
+
+
+Upgrading Centos 7 to centos 8
+
+How to Upgrade CentOS 7 to CentOS 8
+CentOS version number is to execute the cat /etc/centos-release commandCentOS is a more stable and secure distribution of the famous Linux operating system. It was launched in 2004 and since then, different versions of this distribution were released for improving its overall performance. This article is specifically 
+meant for the people who are running a CentOS 7 system and want to switch to a CentOS 8 system. This guide will walk you through the procedure of upgrading a CentOS 7 system to CentOS 8.
+cat /etc/centos-release
+ 
+[root@c8 ~]# yum update -y
+How to find if Linux is running on 32-bit or 64-bit
+1.	Open the Linux terminal application.
+2.	Type uname -a to print system information.
+ 
+3.	Run getconf LONG_BIT to see if Linux kernel is 32 or 64 bit.
+4.	Execute grep -o -w 'lm' /proc/cpuinfo command to determine if you are using 32 or 64 bit CPU
+
+Procedure of Upgrading CentOS 7 to CentOS 8
+To upgrade your CentOS 7 system to CentOS 8, you will have to proceed as explained in the following steps:
+Before starting currently centos 7 server
+[root@c8 ~]# cat /etc/centos-release
+ 
+Step #1: Installation of the “EPEL” Repository
+First, you need to install the “EPEL” repository by running the following command:
+If you are using Proxy Server please disable while installation and upgrading server.
+ 
+
+[root@c8 ~]# yum install epel-release –y
+ 
+
+ 
+Step #2: Installation of the “yum-utils” Tools
+After the installation of the “EPEL” repository on your CentOS 7 system, you have to install the “yum-utils” tools by running the following command:
+ 
+ 
+
+Once the “yum-utils” tools is installed successfully, you have to resolve all the RPM packages by running the following commands in the succeeding order:
+ 
+	
+ 
+[root@c8 ~]# rpmconf –a	
+ 
+Soon after the resolution of the RPM packages, you should clean up all those packages that you no longer require. This can be done with the help of the two following commands:
+[root@c8 ~]# package-cleanup –leaves
+	
+ 
+[root@c8 ~]# package-cleanup --leaves
+
+	
+ 
+Step #3: Installation of the “dnf” Package Manager
+Then, you need to install the “dnf” package manager on your CentOS 7 system. We will use it for upgrading to CentOS 8. The “dnf” package manager can be installed with the help of the following command:
+[root@c8 ~]# yum install dnf
+	
+ 
+After the successful installation of the “dnf” package manager, you have to remove the “yum” package manager so that it cannot cause any hindrance in the working of the “dnf” package manager. The “yum” package manager can be removed by running the following two commands:
+[root@c8 ~]# dnf –y remove yum yum-metadata-parser
+	
+ 
+[root@c8 ~]# rm –Rf /etc/yum
+ 
+Step #4: Upgrading CentOS 7 to CentOS 8
+Now, you need to upgrade your CentOS 7 system with the help of the following command:
+[root@c8 ~]# dnf upgrade
+ 
+ 
+After running this command, you will be all set to install CentOS 8 on your system by running the following command:
+[root@c8 ~]# dnf install http://vault.centos.org/8.2.2004/BaseOS/x86_64/os/Packages/{centos-linux-repos-8-3.el8.noarch.rpm,centos-linux-release-8.2.1.2004.el8.noarch.rpm,centos-gpg-keys-8-3.el8.noarch.rpm}
+ 
+Finally upgraded with centos 8
+ 
+	
+
+This installation will take some time to complete. After the installation, you need to upgrade your “EPEL” repository with the command given below:
+[root@c8 ~]# dnf –y upgrade https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+Or 
+[root@c8 ~]# dnf upgrade https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+ 
+	
+
+Once the “EPEL” repository has been upgraded, you need to clean up all the temporary files with the following command:
+[root@c8 ~]# dnf clean all
+ 
+	
+ 
+After that, you are supposed to remove the CentOS 7 kernel with the command shown below:
+[root@c8 ~]# rpm –e `rpm –q kernel`
+ 
+	
+
+Once the CentOS 7 kernel has been removed, you should also remove all the conflicting packages with the following command:
+[root@c8 ~]# rpm --nodeps sysvinit-tools
+Then, you need to upgrade your CentOS 8 system with the command shown below:
+	$ dnf –y --releasever=8 --allowerasing --setopt=deltarpm=false distro-sync
+ 
+
+Step #5: Installation of the CentOS 8 Kernel Core
+Now, you need to install the CentOS 8 kernel core with the following command:
+[root@c8 ~]# dnf install kernel-core
+ 	
+After that, you also need to install the CentOS 8 minimal package with the command given below:
+[root@c8 ~]# dnf –y groupupdate “Core” “Minimal Install”
+	
+ 
+Step #6: Verification of the Upgrade Process
+Once this whole procedure has been performed, you can verify your upgrade process with the following command:
+Cat /etc/os-release
+	$ cat /etc/redhat-release
+ 
+This command is used to list down the version of CentOS that you are running, as shown in the following image. You can verify that we have successfully upgraded to CentOS 8.
+
+
+UBUNTU
+Use the lsb_release -a command to display the Ubuntu version.
+lsb_release -aCopy
+No LSB modules are available.
+Distributor ID: Ubuntu
+Description:    Ubuntu 18.04 LTS
+Release:    18.04
+Codename:   bionic
+Using Command Line
+You can also test the flavor of your Ubuntu OS through the command line-the Terminal.
+1.	Open the Terminal.
+2.	Use the following command to fetch CPU details from the files sysfs and /proc/cpuinfo:
+$ lscpu
+
+
+How to Upgrade from 18.04 to 20.04
+Step 1: Create a backup of your environment.
+Most upgrades will go smoothly, but you want to be prepared just in case. When you upgrade LTS versions, you are rolling two years of gradual changes into one major update. There are many moving pieces, and a backup can easily fix anything that goes wrong. Do not skip this step, create a backup.
+Step 2: Upgrade the installed packages of Ubuntu version 20.04.
+Updating the packages to the latest version for 16.04 decreases the chance of something going wrong during the upgrade to version 18.04. Run the command below to update and upgrade the packages.
+shariq@fourty:~$ sudo apt update -y
+ 
+
+shariq@fourty:~$ sudo apt full-upgrade -y
+ 
+
+
+shariq@fourty:~$ sudo apt install update-manager-core -y
+ 
+
+
+shariq@fourty:~$ sudo apt-get --purge autoremove
+ 
+shariq@fourty:~$ sudo apt-get clean
+ 
+
+
+
+sudo apt-get update && sudo apt-get upgrade
+after upgrade and cleaning need to reboot 
+shariq@fourty:~$ sudo apt-get update && sudo apt-get upgrade
+ 
+Ubuntu will grab the available package upgrades and ask you to confirm you want to continue.
+
+
+
+Hit:1 http://us.archive.ubuntu.com/ubuntu xenial InRelease
+Get:2 http://us.archive.ubuntu.com/ubuntu xenial-updates InRelease [109 kB]
+Get:3 http://us.archive.ubuntu.com/ubuntu xenial-backports InRelease [107 kB]
+Get:4 http://security.ubuntu.com/ubuntu xenial-security InRelease [107 kB]
+Fetched 323 kB in 0s (470 kB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+Calculating upgrade... Done
+The following packages were automatically installed and are no longer required:
+linux-headers-4.4.0-138 linux-headers-4.4.0-138-generic linux-headers-4.4.0-21 linux-headers-4.4.0-21-generic linux-image-4.4.0-138-generic linux-image-4.4.0-21-generic
+Use 'sudo apt autoremove' to remove them.
+The following packages will be upgraded:
+ca-certificates python3-software-properties software-properties-common update-notifier-common
+4 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Need to get 359 kB of archives.
+After this operation, 0 B of additional disk space will be used.
+Do you want to continue? [Y/n]
+Type Y in your terminal to continue
+Step 3: Install the Ubuntu Update Manager.
+To no one's surprise, you need to have the Update Manager installed on your server to use it. To add the Update Manager to your server add command below to your terminal.
+sudo apt install update-manager-core
+shariq@fourty:~$ sudo apt install update-manager-core
+
+ 
+ 
+If you are using a Liquid Web VPS, you can skip this step. The Upgrade manager is installed by default.
+Step 4: Upgrade Ubuntu.
+Now that you have created a backup installed package updates and have the upgrade manager you are ready to upgrade Ubuntu.
+sudo do-release-upgrade
+Sudo do-release-upgrade
+shariq@fourty:~$ sudo do-release-upgrade
+
+
+ 
+ 
+
+After you enter the upgrade command, you will be asked to confirm that you want to update via SSH. Type Y to continue.
+To make an easy recovery in case of failure, an additional sshd will
+be started on port '1022'. If anything goes wrong with the running
+SSH, you can still connect to the additional one.
+If you run a firewall, you may need to temporarily open this port. As
+this is potentially dangerous it's not done automatically. You can
+open the port with, e.g.:
+'iptables -I INPUT -p tcp --dport 1022 -j ACCEPT'
+To continue, please press [ENTER]
+After hitting Enter, Ubuntu will get all the packages needed to update and will inform you how many packages will be added and removed and the size of the update.
+Do you want to start the upgrade?
+3 installed packages are no longer supported by Canonical. You can
+still get support from the community.
+3 packages are going to be removed. 121 new packages are going to be
+installed. 349 packages are going to be upgraded.
+You have to download a total of 263 M. This download will take about
+33 minutes with a 1Mbit DSL connection and about 10 hours with a 56k
+modem.
+Fetching and installing the upgrade can take several hours. Once the
+download has finished, the process cannot be canceled.
+You will need to type YN to continue upgrading.
+The installation will take some time to complete. You may see some prompts during the upgrade that will require your interaction so plan on staying near your terminal.
+ 
+You may see a prompt like the one above. The prompt is informing us that a new version of a file is available, but the version currently installed on the server has been locally modified. You will have to choose whether you want to install the new version of the file and overwrite the changes, keep the currently installed version, or merge the files. There isn't a correct choice, and you just need to choose which option is the best for you.
+Searching for obsolete software
+Reading state information... Done
+Remove obsolete packages?
+38 packages are going to be removed.
+Continue [yN] Details [d]
+Type YN into your terminal to remove the packages and continue upgrading.
+After the upgrade is complete, a restart will be required.
+You will be logged out during the restart, and you will need to log back in to confirm the upgrade was successful. To check what version of Ubuntu is currently installed use the command below.
+lsb_release -a
+after upgrading 
+ 
+
+ 
+
+upgrading Windows 2012 to 2016
+In order to be able to upgrade Windows Server 2012 to 2016, you must follow the following requirements:
+1. All versions of Windows Server 2016 are 64-bit (upgrading from 32-bit to 64-bit is not possible.)
+2. Only Windows Server 2012 can be upgraded to 2016, other versions cannot be upgraded.
+3. Upgrades are not supported from one version to another. For example, you can’t upgrade the standard version of Windows Server 2012 to the Data Center version of Windows Server 2016.
+4. It is not possible to upgrade from one language to another. For example, you can’t upgrade the German version of Windows Server to Chinese.
+5. The upgrade from Server Core to Desktop version (or vice versa) is not supported.
+6. Upgrading from older versions of Windows Server to trial versions of Windows Server is not supported. Trial versions must be installed manually.
+7. Disable antivirus, because it scans every file that is copied to the disk and slows down the processing speed.
+8. If this server uses NIC Teaming, disable it and reactivate it.
+9. Make a full backup of the server, as you may have a problem during the upgrade and want to go back to the previous version.
+10. Check that the server has no problems, if you see any problems, try to solve them. Otherwise, you may encounter an error that will cause the entire installation process to fail.
+Upgrade with Step By Step :
+Now that you understand the rules of the upgrade, let’s move on.
+Log in to Windows Server 2012 and install DVD or Flash. Open File Explorer and click on DVD Drive as shown below:
+ 
+ 
+ 
+Select Download & install updates to begin the Windows installation process.
+ 
+ 
+ 
+Recommended Article: How to Revert a Windows Update
+Choose a version of Windows Server 2016 that suits your needs. You may need to enlarge the network in the future and require more roles and licenses. So be careful at this point.
+ 
+ 
+ 
+In the license stage, click Accept. You will enter the next step.
+ 
+ 
+ 
+If you have selected the same version as the previous version, you can keep all the applications and files in the system. As we said, if you don’t want to select the previous version, the apps and files will be deleted. Select Keep personal files and apps to save files and apps, otherwise, click Nothing to delete all files. Then click Next.
+ 
+ 
+ 
+How to install Windows Server 2016
+Windows Server automatically checks your system for compatibility. So, click Install to start the installation.
+ 
+ 
+ 
+Wait a bit, because it will take a very long time to install Windows Server on your system. Your system will be reset several times during installation.
+ 
+ 
+ 
+Select the country and keyboard language. Note that you cannot change the language. Click Next.
+ 
+ 
+ 
+Click Accept on the License Terms page.
+ 
+ 
+ 
+Username is the default Administrator, enter a password (code that contains uppercase and lowercase letters, numbers, and symbols), and re-enter the password. Then click Finish. You can log in to the server locally using this username and password.
+ 
+ 
+ 
+Press Ctrl + Alt + Del to enter the login page and log in with the username and password.
+ 
+ 
+ 
+Here we have successfully upgraded from Windows Server 2012 to 2016. By entering the Windows Server 2016 page, you can see the differences and improvements.
+ 
+ 
+
+
+
+Windows server 2016 to windows server 2019 upgradation.
+Preliminary Preparation for In-Place Upgrade
+Windows Server 2019 brings a lot of improvements, even though the changes are minimal. Thus, it is vital to put everything in order in preparation for the in-place upgrade. And sometimes, also though with very minimal chances, the upgrade may fail. Thus, before you start the Windows Server upgrade, it is recommended that you collect some specific information particular your devices, just for troubleshooting and diagnostic purposes. The collected data will only be used if the upgrade fails. Ensure that you store the collected information somewhere that you can get to it off of your device.  
+•	Have you set the target time frame for updating the Server? Setting the target time frame gives you the estimated time you need and what time your users will have to wait for the upgrade to be complete   
+•	Is the Server you're updating production-critical? 
+•	Does the upgrade have a scheduled maintenance window? The in-place upgrade should not be conducted during the same period as the maintenance window
+•	Do you have enough time for a test upgrade on a similar or identical non-production server? Test upgrade is essential as it will help you calculate the target time frame and let you learn all the unique things you need to know before you commence the actual upgrade. 
+•	Who are the principal users of the Server you want to upgrade? Have you informed those that are using the Server – internal, external, or both – of the upgrade or maintenance? Do they know how long they've to wait?
+•	Is there an accurate inventory of what is running on the Server? The inventory must elaborate on the following
+•	Windows Server Features, settings and Roles
+•	Microsoft applications: Exchange Server, SharePoint Server, SQL Server, etc.
+•	3rd-Party applications: Oracle, DB2, SAP, etc.
+•	Is the server part of a Failover Cluster?
+•	Is the Server joined to an Active Directory domain?
+•	Does the Server have any disk that is BitLocker protected?
+•	How often is the currently running server backed-up? Sometimes backups come in the form of a scheduled maintenance window? So, you can go back and check if there is a scheduled maintenance window. 
+•	Have backups ever been successfully restored to the application or Server?
+•	Which is the backup software for the current Server (Windows Server 2019)?
+•	In case the In-place Upgrade fails, which would require rebuilding the Server, do you have access to the Windows Server and application install media? Is the media available? (Although it is highly minimal, In-place Upgrade can fail which necessitates ensuring that a plan is put in place for such a possibility, to maintain SLAs and minimize server downtime.)
+•	Is the running server fully patched? (It is a strong recommendation to have the Server fully patched before starting the In-place Upgrade. Just in case a failure occurs, retrieving this information can support the restoration)
+•	Run systeminfo.exe and ensure to save the output off of your device: on your system, open a command prompt, go to c:\Windows\system32, and while you're there, type systeminfo.exe. An image like this will appear on the screen; copy, paste, and store this system information off of your PC. 
+•	Run ipconfig /all and again save the output – resulting configuration information – in the same place as above: 
+•	Run Get-WindowsFeature and still keep the output as below: 
+•	Finally, run the Registry Editor (RegEdit), and capture the value of the HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion key, this will show you the exact version (BuildLabEx) and Edition (EditionID) of Windows Server. You also need to copy, paste, and store the information as above.   
+Now you are ready for the upgrade before you proceed with the In-Place Upgrade 
+•	Ensure that you backup your device, including operating systems, virtual machines, and applications. 
+•	You MUST also Shut down, Live migrate, or Quick migrate any virtual machines that are running on the Server at the moment. During the in-place upgrade, you can't have any virtual machines running on the Server
+All these are just security measures to ensure that the upgrade doesn't fail and that the process is smooth and less tedious. In simple terms, you must minimize the technical related errors as much as possible
+How to Upgrade to Windows Server 2019 from 2016
+1.	First, you need to conduct one last check. Ensure that the value in the BuildLabEx confirms that you're running Windows Server 2016. Remember, you are performing an in-place Upgrade from windows server 2016 to windows server 2019. Thus, in case your current Server is 2012 then there are other procedures you will need to run before you commence the upgrade
+2.	Locate the Setup media for your Windows Server 2019. 
+3.	Run the Setup. Double click the setup.exe to run it. 
+4.	You will be prompted with a message to allow or deny the program to make changes to your computer.  Click Yes to enable the Setup to proceed.
+5.	If your device is connected to the internet-connected, it is recommended that you select the Download updates, drivers, and optional features (recommended) option. You can also check the bottom left-hand corner of the screen to opt-in or out of the CEIP process. Then you select Next. 
+6.	At this time setup will take a moment to check your device configuration – you need to wait. Check Next, when the configuration is complete. 
+7.	Depending on the distribution channel that supplied your Windows Server media (Volume License, OEM, ODM, Retail, etc.) and the Server's license, you may see a screen prompting you to enter a licensing key. Enter the product key for you to continue with the Upgrade to Windows Server 2019. 
+8.	You will see a screen prompting you to select the image of the Edition to upgrade to. The upgrade will then recognize the variant of the legacy Operating System you are coming from and present you with the correct option for upgrade. Since you are coming from Windows Server 2016, these are the options that will be presented.  Select the Windows Server 2019 edition you want to install, and then select Next. 
+9.	The next prompt is the typical EULA and notices from Microsoft. Depending on your distribution channel of Windows Server media, the license agreements often appear different. Click Accept: 
+10.	A window will prompt you to choose what you want to keep during the upgrade. Since you are running and In-Place Upgrade, you need to keep personal files and apps. Select that option then click Next; 
+11.	After clicking Next, an upgrade process will start checking for updates as was directed to do with the configuration options. This may not happen if the Server had been updated recently. 
+12.	And, since this controls the domain, the in-place upgrade will recognize whether or not the domain has run the Forestprep and Domainprep processes. Forestprep will come first followed by domain prep 
+13.	The method of running the domain prep and forestprep processes is similar as in previous generations. You will need to navigate the installation media to find the Support\adprep folder and use appropriate switches to run the adprep utility. First, run forestprep, and then domainprep. 
+14.	As aforementioned, there the system will only have one schema file to extract and apply.  Ensure that you see the forestprep process complete successfully. 
+15.	Next, you will apply the domainprep process. It only takes a moment, and adprep shall have successfully updated the domain-wide information message. This will have made the actual upgrade process ready to run, consuming the earlier selected configuration in the upgrade wizard.
+16.	Setup will now analyze your device for readiness. When the analysis is complete, Setup will again prompt you to click Back to change choices (of what to keep) or proceed with the In-place Upgrade. Click Install: 
+17.	The in-place upgrade starts immediately, on an Upgrading Windows screen showing its progress. After the upgrade finishes, and then the tour server will reboot.
+18.	Your set up will complete after some time, and your Windows Server 2019 will reboot several times to complete the upgrade. The screen will display "Working on updates" with a percentage until the process is complete. 
+ 
+Post Upgrade 
+After Setup completes installing successfully and the Server rebooted, login to check that the Server upgrade to Windows Server 2019 is successful. The image of the Windows Server 2019 Server Manager window appears like this: 
+ 
+You'll need to run the tun RegEdit and check the value of the HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\WindowsNT\CurrentVersion hive – and view the ProductName. You should also see the Edition of your upgraded Windows Server 2019, for example, Windows Server 2019 Datacenter.
+
+
+
+
+QNAP(TS-h886) INSTALLATION AND CONFIGRATION
+
+ 
+
+ 
+
+ 
+
+ 
+ 
+
+ 
+
+ 
+
+
+ 
+
+ 
+
+
+SSD AND HDD RAID Configuration.
+
+ 
+ 
+
+ 
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+What is Thick Provisioning?
+Thick provisioning, also called fat provisioning, refers to the entire space for the volume that is pre-allocated, prior to use. This means that creating a 100GB volume will actually occupy 100GB of physical disk space, which also means that even if no data is written to disk, the occupied physical storage cannot be used for anything else. Usually, it turns out that a lot of free disk space is sitting around idle. This stranded capacity is wasted, which equals to waste of investment in drives, energy usage, and general inefficiency. Various studies indicate that as much as 75% of the storage capacity in small and medium enterprises or large data centres is allocated but unused. And this is where thin provisioning kicks in.
+
+
+What is Thin Provisioning?
+Thin provisioning refers to allocating data on-demand, which means that volume consumes a small amount of storage and increases as more data is written to disk. So thin provisioning sometimes is known as just-in-time capacity or over allocation. To put it in another way, thin provisioning allocates storage space that may or may not exist. The whole idea is actually another way of virtualization. Virtualization is always about a logical pool of physical assets and provides better utilization over those assets. Here the virtualization mechanism behind thin provisioning is storage pool. The capacity of the storage pool is shared by all volumes. When write requests come in, space will be drawn dynamically from this storage pool to meet the needs. The size of a volume request is called the virtual size compared to the actual size. Therefore, the IT administrator must monitor the status of the usage and increase the physical disks at any time to prevent the actual space from being insufficient.
+
+ 
+
+
+JOIN QNAP to DC 
+Active Directory Domain Controller
+ 
+
+
+ 
+
+ 
+
+
+ 
+
+Only Allowed Users can access files
+ 
+
+
+ 
+
+ 
+
+
+
+Sync Backup one server to Another Server
+Active Sync job.
+Here I am using only 1 way backup.
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+
+
+
+ 
+
+
+QNAP NAS to QNAP NAS Backup (Remote NAS to Local NAS)
+
+Create Storage Spaces
+ 
+Select Remote NAS
+ 
+Before Create Backup need to Enable RTRR (Real Time Remote Replication) and use the password for that
+While you are applying RTRR backup to other NAS use that password.
+ 
+
+ 
+Cross Check the Connection speed
+ 
+ 
+So here connection created
+ 
+
+
+NOW applying nas Backup.
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+ 
+
+ 
+
+
+NAS Drive Virtual Switch Configuration.
+Click on Virtual Switch, ADD 
+ 
+Advanced Mode
+ 
+
+Here I am using 2 Network Adaptor in Single Virtual Switch 
+So, here have selected 2 Network Adaptor.(doing this for good reliability.)
+
+ 
+Assigning Static IP.
+ 
+Not Selecting these 2 services.
+NAT AND DHCP SERVER. 
+ 
+
+
+IPV6 Auto Configuration 
+ 
+DNS Server
+ 
+Apply the new configuration.
+Once you have applied these setting it will take little time for setup.
+ 
+Once done you can check the Virtual Switch Static IP 2 adaptor using Single IP Address.
+ 
+
+2 Interface using single IP Address.
+ 
+
+ 
+
+QNAP SMTP Services.
+Add Services.
+ 
+Register Local Qnap Email id
+ 
+ 
+
+QNAP EVENTS Notification.
+Type custom name as I have mention alert notofication
+ 
+Criteria
+ 
+
+CREATE EVENETS NOTIFICATION RULES.
+ 
+Summary
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
